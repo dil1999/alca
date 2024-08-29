@@ -1,0 +1,175 @@
+% Define the initial list of colors
+colors([red, blue, green, yellow, black]).
+
+% Check if 'pink' is available in the list
+check_pink(Colors) :- 
+    member(pink, Colors).
+
+% Update the list by adding 'pink' or 'grey'
+update_colors(Colors, UpdatedColors) :-
+    (check_pink(Colors) -> 
+        append(Colors, [grey], UpdatedColors);
+        append(Colors, [pink], UpdatedColors)
+    ).
+
+% Sort the list in descending order and display the last color
+display_last_color(Colors) :-
+    sort(0, @>=, Colors, SortedColors),
+    last(SortedColors, LastColor),
+    write('The last color in the descending order is: '), 
+    write(LastColor), nl.
+
+% Display the number of colors in the list
+display_num_colors(Colors) :-
+    length(Colors, NumColors),
+    write('The number of colors in the list is: '), 
+    write(NumColors), nl.
+
+% Execute all tasks
+execute_tasks :-
+    colors(Colors),
+    update_colors(Colors, UpdatedColors),
+    display_last_color(UpdatedColors),
+    display_num_colors(UpdatedColors).
+
+task2.
+
+% Knowledge Base
+
+% Student details: student(IndexNo, FirstName, LastName).
+student(11021, 'Saman', 'Perera').
+student(11022, 'Mohamed', 'Humaith').
+student(11023, 'Nimal', 'Silva').
+student(11024, 'Viji', 'Kumar').
+student(11025, 'Lasantha', 'Jayamanna').
+student(11026, 'Nimal', 'Silva').
+student(11027, 'Ponnambalam', 'Ramanadan').
+
+% Examination scores: score(IndexNo, SubjectCode, Marks).
+score(11021, uct31021, 50).
+score(11021, swt31012, 71).
+score(11021, cis31012, 57).
+score(11021, swt31022, 65).
+score(11021, nst31022, 61).
+
+score(11022, uct31021, 65).
+score(11022, swt31012, 50).
+score(11022, cis31012, 85).
+score(11022, swt31022, 49).
+score(11022, nst31022, 82).
+
+score(11023, uct31021, 100).
+score(11023, swt31012, 85).
+score(11023, cis31012, 100).
+score(11023, swt31022, 89).
+score(11023, nst31022, 76).
+
+score(11024, uct31021, 73).
+score(11024, swt31012, 65).
+score(11024, cis31012, 59).
+score(11024, swt31022, 82).
+score(11024, nst31022, 66).
+
+score(11025, uct31021, 60).
+score(11025, swt31012, 90).
+score(11025, cis31012, 78).
+score(11025, swt31022, 96).
+score(11025, nst31022, 100).
+
+% 1. Create a knowledge base to store student and their score details.
+% (Already done above in the knowledge base definition)
+
+% 2. Is Janaka an undergraduate student?
+is_undergraduate('Janaka') :-
+    student(_, 'Janaka', _);
+    student(_, _, 'Janaka').
+
+% 3. Who are the registered undergraduates in the department?
+registered_undergraduates(Undergraduates) :-
+    findall((IndexNo, FirstName, LastName), student(IndexNo, FirstName, LastName), Undergraduates).
+
+% 4. What is the index no of Silva?
+index_no_of_silva(IndexNo) :-
+    student(IndexNo, _, 'Silva').
+
+% 5. Who sat the examination?
+sat_examination(Students) :-
+    findall((IndexNo, FirstName, LastName), 
+            (student(IndexNo, FirstName, LastName), score(IndexNo, _, _)), 
+            Students).
+
+% 6. Who missed the examination?
+missed_examination(Students) :-
+    findall((IndexNo, FirstName, LastName), 
+            (student(IndexNo, FirstName, LastName), \+ score(IndexNo, _, _)), 
+            Students).
+
+% 7. Is there any student who scored 100 marks for any course unit?
+scored_100(Student) :-
+    score(IndexNo, _, 100),
+    student(IndexNo, FirstName, LastName),
+    Student = (FirstName, LastName).
+
+% 8. Who scores 100 marks and which subject does he/she score?
+who_scored_100(Students) :-
+    findall((FirstName, LastName, SubjectCode), 
+            (score(IndexNo, SubjectCode, 100), student(IndexNo, FirstName, LastName)), 
+            Students).
+
+% Example Queries:
+% - is_undergraduate('Janaka'). 
+% - registered_undergraduates(Undergraduates).
+% - index_no_of_silva(IndexNo).
+% - sat_examination(Students).
+% - missed_examination(Students).
+% - scored_100(Student).
+% - who_scored_100(Students).
+
+lab6.
+% Task 1: Double Step Function
+
+double_step(X, Y) :-
+    X < 3, !,    % Rule 1: If X < 3, Y = 0
+    Y = 0.
+double_step(X, Y) :-
+    X >= 3, X < 6, !,  % Rule 2: If 3 <= X < 6, Y = 2
+    Y = 2.
+double_step(X, Y) :-
+    X >= 6, !,   % Rule 3: If 6 <= X, Y = 4
+    Y = 4.
+
+% Task 2: Finding Maximum
+
+max(X, Y, Max) :-
+    X >= Y, !,   % If X >= Y, then Max = X
+    Max = X.
+max(_, Y, Max) :-  % Otherwise, Max = Y
+    Max = Y.
+
+% Task 3: Find Positive Even Numbers
+
+positive_even(X) :-
+    X > 0,       % X is greater than zero
+    0 is X mod 2,  % X is divisible by 2 (even)
+    !.            % Cut to prevent backtracking
+
+% Task 4: Family Tree and Ancestor Relationships
+
+% Facts representing the parent-child relationships
+parent(john, julia).
+parent(peter, john).
+parent(peter, noah).
+parent(peter, amal).
+parent(peter, perera).
+parent(paul, peter).
+parent(paul, sara).
+parent(paul, walker).
+parent(paul, tailor).
+
+% Rule to define an ancestor relationship
+ancestor(X, Y) :-
+    parent(X, Y), !.   % If X is a parent of Y, then X is an ancestor
+ancestor(X, Y) :-
+    parent(X, Z),
+    ancestor(Z, Y).    % If X is a parent of Z, and Z is an ancestor of Y, then X is an ancestor of Y
+
